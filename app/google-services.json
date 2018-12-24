@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "434539490540",
+    "firebase_url": "https://karrebni-b7c76.firebaseio.com",
+    "project_id": "karrebni-b7c76",
+    "storage_bucket": "karrebni-b7c76.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:434539490540:android:376b7512ccf915a3",
+        "android_client_info": {
+          "package_name": "co.karrebni.tawasol"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "434539490540-qkpgeffrhq4sgt996ejeguqssco0kel1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApVHaQs8_QeU83whtB6GozQS506PEt8AY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
