@@ -59,6 +59,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:11.6.2'
     implementation 'com.google.android.gms:play-services-gcm:11.6.2'
     implementation 'com.google.android.gms:play-services-ads:11.6.2'
+    implementation 'com.google.android.gms:play-services-places:11.6.2'
 }
 
 apply plugin: 'com.google.gms.google-services'

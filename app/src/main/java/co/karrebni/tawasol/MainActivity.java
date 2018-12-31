@@ -22,8 +22,14 @@ import co.karrebni.tawasol.dialogs.PeopleNearbySettingsDialog;
 import co.karrebni.tawasol.dialogs.ProfileBlockDialog;
 import co.karrebni.tawasol.dialogs.ProfileReportDialog;
 import co.karrebni.tawasol.dialogs.SearchSettingsDialog;
+import co.karrebni.tawasol.view.PeopleNearbySettingsDialog1;
 
-public class MainActivity extends ActivityBase implements FragmentDrawer.FragmentDrawerListener, ImageChooseDialog.AlertPositiveListener, ProfileReportDialog.AlertPositiveListener, ProfileBlockDialog.AlertPositiveListener, FriendRequestActionDialog.AlertPositiveListener, SearchSettingsDialog.AlertPositiveListener, PeopleNearbySettingsDialog.AlertPositiveListener {
+public class MainActivity extends ActivityBase implements
+        FragmentDrawer.FragmentDrawerListener, ImageChooseDialog.AlertPositiveListener,
+        ProfileReportDialog.AlertPositiveListener, ProfileBlockDialog.AlertPositiveListener,
+        FriendRequestActionDialog.AlertPositiveListener, SearchSettingsDialog.AlertPositiveListener,
+        PeopleNearbySettingsDialog.AlertPositiveListener
+, PeopleNearbySettingsDialog1.AlertPositiveListener{
 
     Toolbar mToolbar;
 
@@ -337,5 +343,11 @@ public class MainActivity extends ActivityBase implements FragmentDrawer.Fragmen
 
         mTitle = title;
         getSupportActionBar().setTitle(mTitle);
+    }
+
+    @Override
+    public void onChangeDistance1(int position) {
+        SearchFragment p = (SearchFragment) fragment;
+        p.onChangeDistance(position);
     }
 }

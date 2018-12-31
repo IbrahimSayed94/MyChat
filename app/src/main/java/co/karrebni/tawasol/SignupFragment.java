@@ -1,5 +1,6 @@
 package co.karrebni.tawasol;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
@@ -8,6 +9,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +48,11 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.pkmmte.view.CircularImageView;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.MediaType;
@@ -59,6 +70,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -69,6 +81,8 @@ import co.karrebni.tawasol.dialogs.ImageChooseDialog;
 import co.karrebni.tawasol.util.CustomRequest;
 import co.karrebni.tawasol.util.Helper;
 
+import static android.content.Context.LOCATION_SERVICE;
+import static android.content.Context.MODE_PRIVATE;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class SignupFragment extends Fragment implements Constants {
@@ -98,6 +112,18 @@ public class SignupFragment extends Fragment implements Constants {
     private Boolean restore = false;
     private Boolean loading = false;
 
+    private   LocationManager locationManager;
+    private Location location;
+    private double latitude = 0;
+    private double longitude = 0;
+    private String address = "";
+
+    ImageButton bt_getCurrentLcation ;
+    TextView txt_currentLocation ;
+
+    int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
+
+
     public SignupFragment() {
         // Required empty public constructor
     }
@@ -119,6 +145,8 @@ public class SignupFragment extends Fragment implements Constants {
         facebookEmail = i.getStringExtra("facebookEmail");
 
         initpDialog();
+
+
     }
 
     @Override
@@ -451,9 +479,98 @@ public class SignupFragment extends Fragment implements Constants {
         }
 
 
+        txt_currentLocation = rootView.findViewById(R.id.txt_currentLocation);
+        bt_getCurrentLcation = rootView.findViewById(R.id.bt_getCurrentLcation);
+
+        bt_getCurrentLcation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getCurrentLocation();
+            }
+        });
+
+
+        txt_currentLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try {
+                    Log.e("QP","Intent Google Places");
+                    Intent intent =
+                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                                    .build(getActivity());
+                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                } catch (GooglePlayServicesRepairableException e) {
+                    // TODO: Handle the error.
+                } catch (GooglePlayServicesNotAvailableException e) {
+                    // TODO: Handle the error.
+                }
+
+            }
+        }); // google places
+
+
         // Inflate the layout for this fragment
         return rootView;
-    }
+    } // onCreateView
+
+
+
+
+
+    private void getAddressFromLatandLng(double lat, double lng) {
+        Geocoder geocoder;
+        List<Address> addresses = null;
+        geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(lat, lng, 1); // Here 1 represent max location result to returned
+            address = addresses.get(0).getAddressLine(0);
+            txt_currentLocation.setText(address);
+        } catch (Exception e) {
+
+            return;
+        }
+
+    } // function of getAddressFromLatandLng
+
+    private void checkPermission() {
+        locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.i("QP","checkPermission");
+            return;
+        }
+    } //checkPermission
+
+    private void getCurrentLocation() {
+        locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+        List<String> providers = locationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            checkPermission();
+            Location l = locationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+
+        if (bestLocation != null) {
+            latitude = bestLocation.getLatitude();
+            longitude = bestLocation.getLongitude();
+
+            getAddressFromLatandLng(latitude, longitude);
+            Log.i("QP", "current Location : " + bestLocation);
+        } // bestlocation not equal null
+        else {
+            Log.i("QP", "current Location : Null"); //
+
+        } // location equal null
+    } // function of getCurrentLocation
 
     public void onDestroyView() {
 

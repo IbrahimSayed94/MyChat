@@ -1,6 +1,7 @@
 package co.karrebni.tawasol;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -19,9 +20,13 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,9 +45,11 @@ import java.util.Map;
 import co.karrebni.tawasol.adapter.SearchListAdapter;
 import co.karrebni.tawasol.app.App;
 import co.karrebni.tawasol.constants.Constants;
+import co.karrebni.tawasol.dialogs.PeopleNearbySettingsDialog;
 import co.karrebni.tawasol.dialogs.SearchSettingsDialog;
 import co.karrebni.tawasol.model.User;
 import co.karrebni.tawasol.util.CustomRequest;
+import co.karrebni.tawasol.view.PeopleNearbySettingsDialog1;
 
 public class SearchFragment extends Fragment implements Constants, SwipeRefreshLayout.OnRefreshListener {
 
@@ -74,6 +81,16 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
     private Boolean viewMore = false;
     private Boolean restore = false;
     private Boolean preload = true;
+    private  int flag = 0 ;
+
+    Dialog filterDialog , genderDialog;
+    Button bt_ok_filter , bt_ok_gender;
+    RadioGroup radioGroup_filter ;
+    String filterType = "" , genderType="all";
+    CheckBox ch_male , ch_female ;
+    int male = 0 , female = 0 ;
+
+    private int distance = 50;
 
     public SearchFragment() {
         // Required empty public constructor
@@ -93,6 +110,9 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_search, container, false);
+
+        initFilterDialog(rootView);
+        initGenderDialog();
 
         if (savedInstanceState != null) {
 
@@ -185,12 +205,16 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
 
                         currentQuery = getCurrentQuery();
 
-                        if (currentQuery.equals(oldQuery)) {
+                        flag = 2;
 
-                            loadingMore = true;
-                            Toast.makeText(getContext(),""+currentQuery,Toast.LENGTH_SHORT).show();
+                        if(flag != 2) {
+                            if (currentQuery.equals(oldQuery)) {
 
-                            search();
+                                loadingMore = true;
+                                Toast.makeText(getContext(), "" + currentQuery, Toast.LENGTH_SHORT).show();
+
+                                search();
+                            }
                         }
                     }
                 }
@@ -239,29 +263,8 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
             @Override
             public void onClick(View v) {
 
-                /** Getting the fragment manager */
-                android.app.FragmentManager fm = getActivity().getFragmentManager();
-
-                /** Instantiating the DialogFragment class */
-                SearchSettingsDialog alert = new SearchSettingsDialog();
-
-                /** Creating a bundle object to store the selected item's index */
-                Bundle b  = new Bundle();
-
-                /** Storing the selected item's index in the bundle object */
-                b.putInt("searchGender", search_gender);
-                b.putInt("searchOnline", search_online);
-
-
-                /** Setting the bundle object to the dialog fragment object */
-                alert.setArguments(b);
-
-                /** Creating the dialog fragment object, which will in turn open the alert dialog window */
-
-                alert.show(fm, "alert_dialog_search_settings");
-
-                final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+                //filterWithGender();
+                filterDialog.show();
             }
         });
 
@@ -276,6 +279,34 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
         // Inflate the layout for this fragment
         return rootView;
     }
+
+
+   /* private void filterWithGender()
+    {
+        *//** Getting the fragment manager *//*
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+
+        *//** Instantiating the DialogFragment class *//*
+        SearchSettingsDialog alert = new SearchSettingsDialog();
+
+        *//** Creating a bundle object to store the selected item's index *//*
+        Bundle b  = new Bundle();
+
+        *//** Storing the selected item's index in the bundle object *//*
+        b.putInt("searchGender", search_gender);
+        b.putInt("searchOnline", search_online);
+
+
+        *//** Setting the bundle object to the dialog fragment object *//*
+        alert.setArguments(b);
+
+        *//** Creating the dialog fragment object, which will in turn open the alert dialog window *//*
+
+        alert.show(fm, "alert_dialog_search_settings");
+
+        final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+    } // function of filterWithGender*/
 
     public void onCloseSettingsDialog(int searchGender, int searchOnline) {
 
@@ -486,6 +517,7 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
                 params.put("userId", Integer.toString(userId));
                 params.put("gender", Integer.toString(search_gender));
                 params.put("online", Integer.toString(search_online));
+                params.put("distance", Integer.toString(distance));
 
                 return params;
             }
@@ -637,5 +669,319 @@ public class SearchFragment extends Fragment implements Constants, SwipeRefreshL
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    private void initFilterDialog(View view)
+    {
+        filterDialog = new Dialog(getContext());
+        filterDialog.setContentView(R.layout.filter_dialog);
+
+        bt_ok_filter = filterDialog.findViewById(R.id.bt_ok_filter);
+        radioGroup_filter = filterDialog.findViewById(R.id.group_filter);
+
+        radioGroup_filter.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+
+                switch (i)
+                {
+                    case R.id.radio_gender : filterType = "gender";
+                        break;
+                    case R.id.radio_distance : filterType = "distance";
+                        break;
+                    default: filterType = "gender";
+                        break;
+                }
+            }
+        });
+
+        bt_ok_filter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(filterType.equals(""))
+                    Toast.makeText(getContext(),getString(R.string.pleaseChooseFilterType),Toast.LENGTH_LONG).show();
+
+                else {
+                    Log.e("QP","filter : "+filterType);
+                    filterDialog.dismiss();
+
+                    if(filterType.equals("distance"))filterWithDistance();
+                    else if(filterType.equals("gender")) filterWithGender();
+                }
+            }
+        });
+    } // function of initFilterDialog
+
+    private  void filterWithDistance()
+    {
+        /** Getting the fragment manager */
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+
+        /** Instantiating the DialogFragment class */
+        PeopleNearbySettingsDialog1 alert = new PeopleNearbySettingsDialog1();
+
+        /** Creating a bundle object to store the selected item's index */
+        Bundle b  = new Bundle();
+
+        /** Storing the selected item's index in the bundle object */
+        b.putInt("distance", distance);
+
+        /** Setting the bundle object to the dialog fragment object */
+        alert.setArguments(b);
+
+        /** Creating the dialog fragment object, which will in turn open the alert dialog window */
+
+        alert.show(fm, "alert_dialog_nearby_settings");
+    } // function of filterWithDistance
+
+    private void initGenderDialog()
+    {
+        genderDialog = new Dialog(getContext());
+        genderDialog.setContentView(R.layout.filter_gender_dialog);
+
+        ch_male = genderDialog.findViewById(R.id.ch_male);
+        ch_female = genderDialog.findViewById(R.id.ch__female);
+
+        bt_ok_gender = genderDialog.findViewById(R.id.bt_ok_gender);
+
+        ch_male.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b == true)
+                    male = 1 ;
+                else
+                    male = 0 ;
+            }
+        });
+
+        ch_female.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b == true)
+                    female = 1 ;
+                else
+                    female = 0 ;
+            }
+        });
+        bt_ok_gender.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                restore = true;
+                preload = false;
+                itemId = 0;
+                userId = 0;
+                itemCount = 0;
+                search_gender = -1;
+                preload_gender = -1;
+
+                if(male == 1 && female ==1) {
+                    genderType = "all";
+                    Log.e("QP","gender : "+genderType);
+                    genderDialog.dismiss();
+                    getSearchData(genderType);
+                }
+                else if(male == 1) {
+                    genderType = "male";
+                    Log.e("QP","gender : "+genderType);
+                    genderDialog.dismiss();
+                    getSearchData(genderType);
+                }
+                else if (female == 1) {
+                    genderType = "female";
+                    Log.e("QP","gender : "+genderType);
+                    genderDialog.dismiss();
+                    getSearchData(genderType);
+                }
+                else
+                    Toast.makeText(getContext(),getString(R.string.pleaseChooseFilterType),Toast.LENGTH_LONG).show();
+            }
+        });
+    } // function of initGenderDialog
+
+    public void getSearchData(final String gender_type) {
+
+        if(itemsList.size() > 0) {
+            itemsList.clear();
+            itemsAdapter.notifyDataSetChanged();
+        }
+
+        flag = 2 ;
+        CustomRequest jsonReq = new CustomRequest(Request.Method.POST, METHOD_APP_SEARCH, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        try {
+
+                            if (!loadingMore) {
+
+                                itemsList.clear();
+                            }
+
+                            arrayLength = 0;
+
+                            if (!response.getBoolean("error")) {
+
+                                itemCount = response.getInt("itemCount");
+                                oldQuery = response.getString("query");
+                                userId = response.getInt("itemId");
+
+                                if (response.has("items")) {
+
+                                    JSONArray usersArray = response.getJSONArray("items");
+
+                                    arrayLength = usersArray.length();
+
+
+                                    if (arrayLength > 0) {
+
+                                        if(itemsList.size() > 0) {
+                                            itemsList.clear();
+                                            itemsAdapter.notifyDataSetChanged();
+                                        }
+                                        for (int i = 0; i < usersArray.length(); i++) {
+
+                                            JSONObject profileObj = (JSONObject) usersArray.get(i);
+
+                                            User u = new User(profileObj);
+
+                                            if(gender_type.equals("all")) {
+                                                itemsList.add(u);
+                                                Log.e("QP","all"+u.getSex());
+                                            }
+                                            else if (gender_type.equals("male"))
+                                            {
+                                                if(u.getSex() == 0) {
+                                                    itemsList.add(u);
+                                                    Log.e("QP", "male" + u.getSex());
+                                                }
+                                            }
+                                            else if (gender_type.equals("female"))
+                                            {
+                                                if(u.getSex() == 1) {
+                                                    itemsList.add(u);
+                                                    Log.e("QP", "female" + u.getSex());
+                                                }
+                                            }
+                                            itemsAdapter.notifyDataSetChanged();
+
+                                        }
+                                    }
+                                }
+                            }
+
+                        } catch (JSONException e) {
+
+                            e.printStackTrace();
+
+                        }
+                        finally {
+
+                            loadingComplete();
+
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Toast.makeText(getActivity(), getString(R.string.error_data_loading), Toast.LENGTH_LONG).show();
+            }
+        }) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("accountId", Long.toString(App.getInstance().getId()));
+                params.put("accessToken", App.getInstance().getAccessToken());
+                params.put("query", currentQuery);
+                params.put("userId", Integer.toString(userId));
+                params.put("gender", Integer.toString(search_gender));
+                params.put("online", Integer.toString(search_online));
+
+                return params;
+            }
+        };
+
+        App.getInstance().addToRequestQueue(jsonReq);
+    }
+
+    private void filterWithGender()
+    {
+        genderDialog.show();
+    } // function of filterWithGender
+
+    public void onChangeDistance(int position) {
+
+        switch (position) {
+
+            case 0: {
+
+                distance = 50;
+
+                itemId = 0;
+
+              search();
+
+                break;
+            }
+
+            case 1: {
+
+                distance = 100;
+
+                itemId = 0;
+
+                search();
+
+                break;
+            }
+
+            case 2: {
+
+                distance = 250;
+
+                itemId = 0;
+
+                search();
+
+                break;
+            }
+
+            case 3: {
+
+                distance = 500;
+
+                itemId = 0;
+
+                search();
+
+                break;
+            }
+
+            case 4: {
+
+                distance = 1000;
+
+                itemId = 0;
+
+                search();
+
+                break;
+            }
+
+            default: {
+
+                distance = 50;
+
+                itemId = 0;
+
+                search();
+
+                break;
+            }
+        }
     }
 }

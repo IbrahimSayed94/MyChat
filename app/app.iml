@@ -147,6 +147,7 @@
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-iid-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable-27.0.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-tasks-license-11.6.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-maps-license-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-27.0.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-messaging-license-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.facebook.android:facebook-login-4.39.0" level="project" />
@@ -159,6 +160,7 @@
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-basement-license-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.facebook.android:facebook-core-4.39.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-iid-11.6.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-places-license-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-gass-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-messaging-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-analytics-impl-11.6.2" level="project" />
@@ -168,6 +170,8 @@
     <orderEntry type="library" name="Gradle: com.facebook.android:facebook-applinks-4.39.0" level="project" />
     <orderEntry type="library" name="Gradle: com.github.bumptech.glide:glide:3.7.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:design-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-places-11.6.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-maps-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-v4-27.0.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-common-11.6.2" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-analytics-impl-license-11.6.2" level="project" />

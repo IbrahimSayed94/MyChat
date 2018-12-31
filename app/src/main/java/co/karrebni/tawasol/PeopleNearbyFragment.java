@@ -1,6 +1,7 @@
 package co.karrebni.tawasol;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,9 +28,13 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +54,7 @@ import co.karrebni.tawasol.adapter.PeopleNearbyListAdapter;
 import co.karrebni.tawasol.app.App;
 import co.karrebni.tawasol.constants.Constants;
 import co.karrebni.tawasol.dialogs.PeopleNearbySettingsDialog;
+import co.karrebni.tawasol.dialogs.SearchSettingsDialog;
 import co.karrebni.tawasol.model.Profile;
 import co.karrebni.tawasol.util.CustomRequest;
 import co.karrebni.tawasol.util.Helper;
@@ -90,6 +96,17 @@ public class PeopleNearbyFragment extends Fragment implements Constants, SwipeRe
         // Required empty public constructor
     }
 
+
+    Dialog filterDialog , genderDialog;
+    Button bt_ok_filter , bt_ok_gender;
+    RadioGroup radioGroup_filter ;
+    String filterType = "" , genderType="all";
+    CheckBox ch_male , ch_female ;
+    int male = 0 , female = 0 ;
+
+
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -126,6 +143,10 @@ public class PeopleNearbyFragment extends Fragment implements Constants, SwipeRe
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_people_nearby, container, false);
+
+
+        initFilterDialog(rootView);
+        initGenderDialog();
 
         mItemsContainer = (SwipeRefreshLayout) rootView.findViewById(R.id.container_items);
         mItemsContainer.setOnRefreshListener(this);
@@ -773,6 +794,7 @@ public class PeopleNearbyFragment extends Fragment implements Constants, SwipeRe
         MainMenu = menu;
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -782,24 +804,7 @@ public class PeopleNearbyFragment extends Fragment implements Constants, SwipeRe
 
             case R.id.action_nearby_settings: {
 
-                /** Getting the fragment manager */
-                android.app.FragmentManager fm = getActivity().getFragmentManager();
-
-                /** Instantiating the DialogFragment class */
-                PeopleNearbySettingsDialog alert = new PeopleNearbySettingsDialog();
-
-                /** Creating a bundle object to store the selected item's index */
-                Bundle b  = new Bundle();
-
-                /** Storing the selected item's index in the bundle object */
-                b.putInt("distance", distance);
-
-                /** Setting the bundle object to the dialog fragment object */
-                alert.setArguments(b);
-
-                /** Creating the dialog fragment object, which will in turn open the alert dialog window */
-
-                alert.show(fm, "alert_dialog_nearby_settings");
+            filterDialog.show();
 
                 return true;
             }
@@ -820,4 +825,234 @@ public class PeopleNearbyFragment extends Fragment implements Constants, SwipeRe
     public void onDetach() {
         super.onDetach();
     }
+
+
+    private void initFilterDialog(View view)
+    {
+        filterDialog = new Dialog(getContext());
+        filterDialog.setContentView(R.layout.filter_dialog);
+
+        bt_ok_filter = filterDialog.findViewById(R.id.bt_ok_filter);
+        radioGroup_filter = filterDialog.findViewById(R.id.group_filter);
+
+        radioGroup_filter.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+
+                switch (i)
+                {
+                    case R.id.radio_gender : filterType = "gender";
+                    break;
+                    case R.id.radio_distance : filterType = "distance";
+                    break;
+                    default: filterType = "gender";
+                        break;
+                }
+            }
+        });
+
+        bt_ok_filter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(filterType.equals(""))
+                    Toast.makeText(getContext(),getString(R.string.pleaseChooseFilterType),Toast.LENGTH_LONG).show();
+
+                else {
+                    Log.e("QP","filter : "+filterType);
+                    filterDialog.dismiss();
+
+                    if(filterType.equals("distance"))filterWithDistance();
+                    else if(filterType.equals("gender")) filterWithGender();
+                }
+            }
+        });
+    } // function of initFilterDialog
+
+
+    private  void filterWithDistance()
+    {
+        /** Getting the fragment manager */
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+
+        /** Instantiating the DialogFragment class */
+        PeopleNearbySettingsDialog alert = new PeopleNearbySettingsDialog();
+
+        /** Creating a bundle object to store the selected item's index */
+        Bundle b  = new Bundle();
+
+        /** Storing the selected item's index in the bundle object */
+        b.putInt("distance", distance);
+
+        /** Setting the bundle object to the dialog fragment object */
+        alert.setArguments(b);
+
+        /** Creating the dialog fragment object, which will in turn open the alert dialog window */
+
+        alert.show(fm, "alert_dialog_nearby_settings");
+    } // function of filterWithDistance
+
+
+    private void initGenderDialog()
+    {
+       genderDialog = new Dialog(getContext());
+       genderDialog.setContentView(R.layout.filter_gender_dialog);
+
+       ch_male = genderDialog.findViewById(R.id.ch_male);
+       ch_female = genderDialog.findViewById(R.id.ch__female);
+
+       bt_ok_gender = genderDialog.findViewById(R.id.bt_ok_gender);
+
+        ch_male.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b == true)
+                    male = 1 ;
+                else
+                    male = 0 ;
+            }
+        });
+
+        ch_female.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+             if(b == true)
+                    female = 1 ;
+                else
+                    female = 0 ;
+            }
+        });
+       bt_ok_gender.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+
+
+               itemId = 0;
+
+             if(male == 1 && female ==1) {
+                 genderType = "all";
+                 Log.e("QP","gender : "+genderType);
+                 genderDialog.dismiss();
+                 getSearchData(genderType);
+             }
+             else if(male == 1) {
+                 genderType = "male";
+                 Log.e("QP","gender : "+genderType);
+                 genderDialog.dismiss();
+                 getSearchData(genderType);
+             }
+             else if (female == 1) {
+                 genderType = "female";
+                 Log.e("QP","gender : "+genderType);
+                 genderDialog.dismiss();
+                 getSearchData(genderType);
+             }
+             else
+                 Toast.makeText(getContext(),getString(R.string.pleaseChooseFilterType),Toast.LENGTH_LONG).show();
+           }
+       });
+    } // function of initGenderDialog
+
+    private void filterWithGender()
+    {
+      genderDialog.show();
+    } // function of filterWithGender
+
+    private void getSearchData(final String gender_type) {
+
+
+        mItemsContainer.setRefreshing(true);
+
+        CustomRequest jsonReq = new CustomRequest(Request.Method.POST, METHOD_PROFILE_PEOPLE_NEARBY_GET, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        if (!loadingMore) {
+
+                            itemsList.clear();
+                        }
+
+                        try {
+
+                            arrayLength = 0;
+
+                            if (!response.getBoolean("error")) {
+
+                                itemId = response.getInt("itemId");
+
+                                if (response.has("items")) {
+
+                                    JSONArray usersArray = response.getJSONArray("items");
+
+                                    Log.e("QP","search json : "+usersArray.length());
+
+                                    arrayLength = usersArray.length();
+
+                                    if (arrayLength > 0) {
+
+                                        for (int i = 0; i < usersArray.length(); i++) {
+
+                                            JSONObject userObj = (JSONObject) usersArray.get(i);
+
+                                            Profile profile = new Profile(userObj);
+
+
+
+                                            // 0 -- > male , 1 --> female
+
+
+                                            if(gender_type.equals("all")) {
+                                                itemsList.add(profile);
+                                            }
+                                            else if (gender_type.equals("male"))
+                                            {
+                                                if(userObj.getInt("sex") == 0)
+                                                    itemsList.add(profile);
+                                            }
+                                            else if (gender_type.equals("female"))
+                                            {
+                                                if(userObj.getInt("sex") == 1)
+                                                    itemsList.add(profile);
+                                            }
+                                            itemsAdapter.notifyDataSetChanged();
+                                        }
+                                    }
+                                }
+
+                            }
+
+                        } catch (JSONException e) {
+
+                            e.printStackTrace();
+
+                        } finally {
+
+                            loadingComplete();
+//                            Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                loadingComplete();
+            }
+        }) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("accountId", Long.toString(App.getInstance().getId()));
+                params.put("accessToken", App.getInstance().getAccessToken());
+                params.put("distance", Integer.toString(distance));
+                params.put("itemId", Long.toString(itemId));
+
+                return params;
+            }
+        };
+
+        App.getInstance().addToRequestQueue(jsonReq);
+    }
+
 }
